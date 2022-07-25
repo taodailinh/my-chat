@@ -3,6 +3,7 @@ import { Row, Col, Typography, Button } from "antd";
 import { auth } from "../../firebase/config";
 import { FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { addDocument } from "../../firebase/services";
 const { Title } = Typography;
 
 const fbProvider = new FacebookAuthProvider();
@@ -14,11 +15,21 @@ export default function Login() {
       .then((result) => {
         // The signed-in user info.
         const user = result.user;
+        const additionalUserInfo = result.additionalUserInfo;
 
         // This gives you a Facebook Access Token. You can use it to access the Facebook API.
         const credential = FacebookAuthProvider.credentialFromResult(result);
         const accessToken = credential.accessToken;
         if (user) {
+          if (additionalUserInfo?.isNewUser) {
+            addDocument("users", {
+              displayName: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL,
+              uid: user.uid,
+              providerId: additionalUserInfo.providerId,
+            });
+          }
           navigate("/");
         }
         // ...

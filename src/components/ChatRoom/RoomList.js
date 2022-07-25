@@ -2,6 +2,8 @@ import React from "react";
 import { Collapse, Typography, Button } from "antd";
 import { PlusSquareOutlined } from "@ant-design/icons";
 import styled from "styled-components";
+import useFirestore from "../../hooks/useFirestore";
+import { AuthContext } from "../../Context/AuthProvider";
 const { Panel } = Collapse;
 const PanelStyled = styled(Panel)`
   &&& {
@@ -26,13 +28,25 @@ const LinkStyled = styled(Typography.Link)`
 `;
 
 export default function RoomList() {
+  const {
+    user: { uid },
+  } = React.useContext(AuthContext);
+  const roomsCondition = React.useMemo(() => {
+    return {
+      fieldName: "members",
+      operator: "array-contains",
+      compareValue: uid,
+    };
+  });
+
+  const rooms = useFirestore("rooms", roomsCondition);
   return (
     <div>
       <Collapse defaultActiveKey={["1"]} ghost>
         <PanelStyled header="Danh sách các phòng" key="1">
-          <LinkStyled>Room 1</LinkStyled>
-          <LinkStyled>Room 2</LinkStyled>
-          <LinkStyled>Room 3</LinkStyled>
+          {rooms.map((room) => (
+            <LinkStyled key={room.id}>{room.name}</LinkStyled>
+          ))}
           <Button
             type="text"
             icon={<PlusSquareOutlined />}
