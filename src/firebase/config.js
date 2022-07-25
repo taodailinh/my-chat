@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 
 import { getFirestore } from "firebase/firestore";
-import { getDatabase } from "firebase/database";
+import { getDatabase, connectDatabaseEmulator } from "firebase/database";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
 
@@ -27,6 +27,12 @@ const analytics = getAnalytics(firebaseApp);
 
 const auth = getAuth(firebaseApp);
 const db = getDatabase(firebaseApp);
+
+// Use firebase emulator for creating fake Facebook account
+connectAuthEmulator(auth, "http://localhost:9099");
+if (window.location.hostname === "localhost") {
+  connectDatabaseEmulator(db, "localhost", 8088);
+}
 
 export { db, auth };
 export default firebaseApp;
