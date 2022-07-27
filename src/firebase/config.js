@@ -30,9 +30,7 @@ const db = getFirestore(firebaseApp);
 
 // Use firebase emulator for creating fake Facebook account
 connectAuthEmulator(auth, "http://localhost:9099");
-if (window.location.hostname === "localhost") {
-  connectFirestoreEmulator(db, "localhost", 8088);
-}
+connectFirestoreEmulator(db, "localhost", 8080);
 
 export { db, auth };
 export default firebaseApp;

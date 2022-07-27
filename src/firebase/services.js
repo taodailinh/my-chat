@@ -1,9 +1,7 @@
-import { serverTimestamp } from "firebase/firestore";
-import firebaseApp, { db } from "./config";
-export const addDocument = (collection, data) => {
-  const query = db.collection(collection);
-  query.add({
-    ...data,
-    createdAt: serverTimestamp(),
-  });
+import { serverTimestamp, collection, addDoc } from "firebase/firestore";
+import { db } from "./config";
+export const addDocument = async (collections, data) => {
+  console.log("Service is working");
+  const addedDoc = await addDoc(collection(db, collections), data);
+  console.log("added doc", addedDoc);
 };

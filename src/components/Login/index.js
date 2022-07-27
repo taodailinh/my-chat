@@ -15,19 +15,22 @@ export default function Login() {
       .then((result) => {
         // The signed-in user info.
         const user = result.user;
-        const additionalUserInfo = result.additionalUserInfo;
-
+        const _tokenResponse = result._tokenResponse;
+        console.log("result", result);
+        console.log(_tokenResponse);
         // This gives you a Facebook Access Token. You can use it to access the Facebook API.
         const credential = FacebookAuthProvider.credentialFromResult(result);
         const accessToken = credential.accessToken;
+        console.log(_tokenResponse?.isNewUser);
         if (user) {
-          if (additionalUserInfo?.isNewUser) {
+          if (_tokenResponse?.isNewUser) {
+            console.log("Adding to firestore");
             addDocument("users", {
               displayName: user.displayName,
               email: user.email,
               photoURL: user.photoURL,
               uid: user.uid,
-              providerId: additionalUserInfo.providerId,
+              providerId: result.providerId,
             });
           }
           navigate("/");

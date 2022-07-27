@@ -31,15 +31,17 @@ export default function RoomList() {
   const {
     user: { uid },
   } = React.useContext(AuthContext);
+  console.log(uid);
   const roomsCondition = React.useMemo(() => {
     return {
       fieldName: "members",
       operator: "array-contains",
       compareValue: uid,
     };
-  });
+  }, []);
 
   const rooms = useFirestore("rooms", roomsCondition);
+  console.log("rooms", rooms);
   return (
     <div>
       <Collapse defaultActiveKey={["1"]} ghost>
