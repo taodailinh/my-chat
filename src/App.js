@@ -3,14 +3,19 @@ import Login from "./components/Login";
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 import ChatRoom from "./components/ChatRoom";
 import AuthProvider from "./Context/AuthProvider";
+import AppProvider from "./Context/AppContext";
+import AddRoomModal from "./components/Modals/AddRoomModal";
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route element={<Login />} path="/login" />
-          <Route element={<ChatRoom />} path="/" />
-        </Routes>
+        <AppProvider>
+          <Routes>
+            <Route element={<Login />} path="/login" />
+            <Route element={<ChatRoom />} path="/" />
+          </Routes>
+          <AddRoomModal />
+        </AppProvider>
       </AuthProvider>
     </BrowserRouter>
   );
