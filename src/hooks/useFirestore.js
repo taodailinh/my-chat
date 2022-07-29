@@ -13,23 +13,28 @@ import {
 const useFirestore = (collections, condition) => {
   const [documents, setDocuments] = useState([]);
   useEffect(() => {
-    const collectionRef = collection(db, collections);
-    const q = query(
-      collectionRef,
-      where(condition.fieldName, condition.operator, condition.compareValue),
-      orderBy("createdAt")
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      snapshot.forEach((doc) => {
-        console.log("snapshotdoc", doc.data());
+    if (condition) {
+      if (!condition.compareValue || !condition.compareValue.length) {
+        return;
+      }
+      const collectionRef = collection(db, collections);
+      const q = query(
+        collectionRef,
+        where(condition.fieldName, condition.operator, condition.compareValue),
+        orderBy("createdAt")
+      );
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        snapshot.forEach((doc) => {
+          console.log("snapshotdoc", doc.data());
+        });
+        const queriedDocuments = [];
+        snapshot.forEach((doc) => {
+          queriedDocuments.push({ ...doc.data(), id: doc.data().id });
+        });
+        setDocuments(queriedDocuments);
       });
-      const queriedDocuments = [];
-      snapshot.forEach((doc) => {
-        queriedDocuments.push({ ...doc.data(), id: doc.data().id });
-      });
-      setDocuments(queriedDocuments);
-    });
-    return unsubscribe;
+      return unsubscribe;
+    }
   }, [collections, condition]);
   return documents;
 };

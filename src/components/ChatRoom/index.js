@@ -2,6 +2,7 @@ import React from "react";
 import ChatWindow from "./ChatWindow";
 import SideBar from "./SideBar";
 import { Col, Row } from "antd";
+import AppProvider from "../../Context/ChatProvider";
 
 export default function ChatRoom() {
   return (

@@ -1,10 +1,8 @@
 import React, { useState, useMemo } from "react";
-import { auth } from "../firebase/config";
-import { Spin } from "antd";
 import { AuthContext } from "./AuthProvider";
 import useFirestore from "../hooks/useFirestore";
 
-export const AppContext = React.createContext();
+export const ChatContext = React.createContext();
 export default function AppProvider({ children }) {
   const [isAddRoomVisible, setAddRoomVisible] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState("");
@@ -12,6 +10,7 @@ export default function AppProvider({ children }) {
     user: { uid },
   } = React.useContext(AuthContext);
   console.log(uid);
+
   const roomsCondition = useMemo(() => {
     return {
       fieldName: "members",
@@ -21,7 +20,7 @@ export default function AppProvider({ children }) {
   }, [uid]);
   const rooms = useFirestore("rooms", roomsCondition);
   const selectedRoom = useMemo(
-    () => rooms.find((room) => room.name === selectedRoomId) || {},
+    () => rooms.find((room) => room.id === selectedRoomId) || {},
     [rooms, selectedRoomId]
   );
 
@@ -38,7 +37,7 @@ export default function AppProvider({ children }) {
   const members = useFirestore("users", usersCondition);
 
   return (
-    <AppContext.Provider
+    <ChatContext.Provider
       value={{
         rooms,
         selectedRoom,
@@ -50,6 +49,6 @@ export default function AppProvider({ children }) {
       }}
     >
       {children}
-    </AppContext.Provider>
+    </ChatContext.Provider>
   );
 }

@@ -1,9 +1,15 @@
 import { UserAddOutlined } from "@ant-design/icons";
-import { Avatar, Tooltip, Button, Input, Form } from "antd";
-import React, { useContext, useMemo } from "react";
+import { Avatar, Tooltip, Button, Input, Form, Alert } from "antd";
+import React, { useContext, useMemo, useState } from "react";
 import styled from "styled-components";
-import { AppContext } from "../../Context/AppContext";
+import { ChatContext } from "../../Context/ChatProvider";
+import { AppContext } from "../../Context/AppProvider";
+
 import Message from "./Message";
+import { addDocument } from "../../firebase/services";
+import { AuthContext } from "../../Context/AuthProvider";
+import useFirestore from "../../hooks/useFirestore";
+import { formatRelative } from "date-fns/esm";
 const WrapperStyled = styled.div`
   height: 100vh;
 `;
@@ -56,73 +62,112 @@ const FormStyled = styled(Form)`
   }
 `;
 export default function ChatWindow() {
-  const { selectedRoom, members } = useContext(AppContext);
-
-  // const selectedRoom = rooms.find((room) => room.name === selectedRoomId);
+  const { selectedRoom, selectedRoomId, members } = useContext(ChatContext);
+  const { setInviteMemberVisible } = useContext(AppContext);
+  const {
+    user: { uid, photoURL, displayName },
+  } = useContext(AuthContext);
+  const [inputValue, setInputValue] = useState("");
+  const [form] = Form.useForm();
+  console.log(selectedRoomId);
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+  const handleOnSubmit = () => {
+    addDocument("messages", {
+      text: inputValue,
+      uid: uid,
+      photoURL: photoURL,
+      roomId: selectedRoomId,
+      displayName: displayName,
+    });
+    form.resetFields(["message"]);
+  };
+  const condition = useMemo(
+    () => ({
+      fieldName: "roomId",
+      operator: "==",
+      compareValue: selectedRoomId,
+    }),
+    [selectedRoomId]
+  );
+  const messages = useFirestore("messages", condition);
+  console.log(messages);
+  function formatDate(seconds) {
+    let formattedDate = "";
+    if (seconds) {
+      formattedDate = formatRelative(new Date(seconds * 1000), new Date());
+      formattedDate =
+        formattedDate.charAt(0).toLocaleUpperCase() + formattedDate.slice(1);
+    }
+    return formattedDate;
+  }
   return (
     <WrapperStyled>
-      <HeaderStyled>
-        <div className="header__info">
-          <p className="header__title">
-            {selectedRoom ? selectedRoom.name : "Please choose a chat room"}
-          </p>
-          <span className="header__description">
-            {selectedRoom?.description}
-          </span>
-        </div>
-        <ButtonGroupStyled>
-          <Button icon={<UserAddOutlined />} type="text">
-            Mời
-          </Button>
-          <Avatar.Group size="small" maxCount={2}>
-            {members.map((member) => (
-              <Tooltip title={member.displayName} key={member.id}>
-                <Avatar src={member.photoURL}>
-                  {member.photoURL ? "" : member.displayName.charAt(0)}
-                </Avatar>
-              </Tooltip>
-            ))}
-          </Avatar.Group>
-        </ButtonGroupStyled>
-      </HeaderStyled>
-      <ContentStyled>
-        <MessageListStyled>
-          <Message
-            text="Vợ vợ"
-            photoURL={null}
-            displayName="Linh"
-            creatAt={3134121221}
-          ></Message>
-          <Message
-            text="Anh anh"
-            photoURL={null}
-            displayName="Cát"
-            creatAt={3134121221}
-          ></Message>
-          <Message
-            text="Chồng chồng"
-            photoURL={null}
-            displayName="Trâm"
-            creatAt={3134121221}
-          ></Message>
-          <Message
-            text="Em em"
-            photoURL={null}
-            displayName="Lượng"
-            creatAt={3134121221}
-          ></Message>
-        </MessageListStyled>
-        <FormStyled>
-          <Form.Item>
-            <Input
-              placeholder="Nhập tin nhắn..."
-              bordered={false}
-              autoComplete="off"
-            />
-          </Form.Item>
-          <Button type="primary">Gửi</Button>
-        </FormStyled>
-      </ContentStyled>
+      {selectedRoomId ? (
+        <>
+          <HeaderStyled>
+            <div className="header__info">
+              <p className="header__title">{selectedRoom.name}</p>
+              <span className="header__description">
+                {selectedRoom?.description}
+              </span>
+            </div>
+            <ButtonGroupStyled>
+              <Button
+                icon={<UserAddOutlined />}
+                onClick={() => setInviteMemberVisible(true)}
+                type="text"
+              >
+                Mời
+              </Button>
+
+              <Avatar.Group size="small" maxCount={2}>
+                {members.map((member) => (
+                  <Tooltip title={member.displayName} key={member.uid}>
+                    <Avatar src={member.photoURL}>
+                      {member.photoURL ? "" : member.displayName.charAt(0)}
+                    </Avatar>
+                  </Tooltip>
+                ))}
+              </Avatar.Group>
+            </ButtonGroupStyled>
+          </HeaderStyled>
+          <ContentStyled>
+            <MessageListStyled>
+              {messages.map((message) => (
+                <Message
+                  key={message.id}
+                  text={message.text}
+                  photoURL={message.photoURL}
+                  displayName={message.displayName}
+                  creatAt={formatDate(message.createdAt.seconds)}
+                ></Message>
+              ))}
+            </MessageListStyled>
+            <FormStyled form={form}>
+              <Form.Item name="message">
+                <Input
+                  onChange={handleInputChange}
+                  onPressEnter={handleOnSubmit}
+                  placeholder="Nhập tin nhắn..."
+                  bordered={false}
+                  autoComplete="off"
+                />
+              </Form.Item>
+              <Button type="primary">Gửi</Button>
+            </FormStyled>
+          </ContentStyled>{" "}
+        </>
+      ) : (
+        <Alert
+          message="Hãy chọn phòng"
+          type="info"
+          showIcon
+          style={{ margin: 5 }}
+          closable
+        />
+      )}
     </WrapperStyled>
   );
 }

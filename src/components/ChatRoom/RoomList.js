@@ -3,7 +3,9 @@ import { Collapse, Typography, Button } from "antd";
 import { PlusSquareOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { AuthContext } from "../../Context/AuthProvider";
-import { AppContext } from "../../Context/AppContext";
+import { AppContext } from "../../Context/AppProvider";
+import { ChatContext } from "../../Context/ChatProvider";
+
 const { Panel } = Collapse;
 const PanelStyled = styled(Panel)`
   &&& {
@@ -28,8 +30,8 @@ const LinkStyled = styled(Typography.Link)`
 `;
 
 export default function RoomList() {
-  const { rooms, setAddRoomVisible, setSelectedRoomId } =
-    useContext(AppContext);
+  const { setAddRoomVisible } = useContext(AppContext);
+  const { rooms, setSelectedRoomId } = useContext(ChatContext);
   const handleAddRoom = () => {
     setAddRoomVisible(true);
   };
@@ -39,8 +41,8 @@ export default function RoomList() {
         <PanelStyled header="Danh sách các phòng" key="1">
           {rooms.map((room) => (
             <LinkStyled
-              key={room.name}
-              onClick={() => setSelectedRoomId(room.name)}
+              key={room.id}
+              onClick={() => setSelectedRoomId(room.id)}
             >
               {room.name}
             </LinkStyled>

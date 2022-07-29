@@ -3,7 +3,7 @@ import { Row, Col, Typography, Button } from "antd";
 import { auth } from "../../firebase/config";
 import { FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { addDocument } from "../../firebase/services";
+import { addDocument, generateKeywords } from "../../firebase/services";
 const { Title } = Typography;
 
 const fbProvider = new FacebookAuthProvider();
@@ -31,6 +31,7 @@ export default function Login() {
               photoURL: user.photoURL,
               uid: user.uid,
               providerId: result.providerId,
+              keywords: generateKeywords(user.displayName),
             });
           }
           navigate("/");
